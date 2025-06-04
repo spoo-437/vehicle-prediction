@@ -13,7 +13,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 st.title("Vehicle Price Prediction Dashboard")
 
 # Upload CSV
-uploaded_file = st.file_uploader("Upload the vehicle dataset CSV", type=["csv"])
+uploaded_file = st.file_uploader("dataset.csv", type=["csv"])
 
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
