@@ -57,19 +57,35 @@ model.fit(X_train, y_train)
 st.title("🚗 Vehicle Price Predictor")
 st.write("Enter vehicle specifications below to get a predicted price.")
 
-# Input fields
+# Get min and max year from dataset
+min_year = int(df['year'].min())
+max_year = int(df['year'].max())
+default_year = 2015
+
+# Adjust default_year if out of dataset range
+if default_year < min_year:
+    default_year = min_year
+elif default_year > max_year:
+    default_year = max_year
+
+year_input = st.number_input(
+    "Year of Manufacture",
+    min_value=min_year,
+    max_value=max_year,
+    value=default_year
+)
+
+mileage_input = st.number_input("Mileage (in km)", min_value=0, value=50000)
+
 make_input = st.selectbox("Select Car Brand/Make", make_list)
 fuel_input = st.selectbox("Select Fuel Type", fuel_list)
-
-year_input = st.number_input("Year of Manufacture", min_value=int(df['year'].min()), max_value=int(df['year'].max()), value=2015)
-mileage_input = st.number_input("Mileage (in km)", min_value=0, value=50000)
 
 if st.button("Predict Price"):
     try:
         input_data = pd.DataFrame({
             'make_encoded': [make_map[make_input]],
             'year': [int(year_input)],
-            'mileage': [int(mileage_input)],  # Convert to int as training data
+            'mileage': [int(mileage_input)],
             'fuel_encoded': [fuel_map[fuel_input]]
         })
 
