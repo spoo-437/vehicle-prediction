@@ -26,6 +26,9 @@ def load_data():
     df['mileage'] = df['mileage'].astype(int)  
     df['price'] = df['price'].astype(int)
 
+    # Optional: Filter out years less than 2000 (if you want)
+    df = df[df['year'] >= 2000]
+
     df.reset_index(drop=True, inplace=True)  
     return df  
 
@@ -57,12 +60,12 @@ model.fit(X_train, y_train)
 st.title("🚗 Vehicle Price Predictor")
 st.write("Enter vehicle specifications below to get a predicted price.")
 
-# Get min and max year from dataset
-min_year = int(df['year'].min())
+# Fixed minimum year = 2000
+min_year = 2000
 max_year = int(df['year'].max())
 default_year = 2015
 
-# Adjust default_year if out of dataset range
+# Adjust default year if out of bounds
 if default_year < min_year:
     default_year = min_year
 elif default_year > max_year:
