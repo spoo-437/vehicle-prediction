@@ -8,26 +8,27 @@ from sklearn.metrics import mean_squared_error, r2_score
 
 @st.cache_data
 def load_data():
-df = pd.read_csv("dataset.csv")
+    df = pd.read_csv("dataset.csv")
 
-# Drop rows with missing required values  
-df.dropna(subset=['make', 'fuel', 'year', 'mileage', 'price'], inplace=True)
+    # Drop rows with missing required values  
+    df.dropna(subset=['make', 'fuel', 'year', 'mileage', 'price'], inplace=True)
 
-# Clean and convert year, mileage, price columns  
-df['year'] = pd.to_numeric(df['year'], errors='coerce')  
-df['mileage'] = pd.to_numeric(df['mileage'], errors='coerce')  
-df['price'] = pd.to_numeric(df['price'], errors='coerce')  
+    # Clean and convert year, mileage, price columns  
+    df['year'] = pd.to_numeric(df['year'], errors='coerce')  
+    df['mileage'] = pd.to_numeric(df['mileage'], errors='coerce')  
+    df['price'] = pd.to_numeric(df['price'], errors='coerce')  
 
-# Drop rows with invalid numeric data  
-df.dropna(subset=['year', 'mileage', 'price'], inplace=True)  
+    # Drop rows with invalid numeric data  
+    df.dropna(subset=['year', 'mileage', 'price'], inplace=True)  
 
-# Convert to integer  
-df['year'] = df['year'].astype(int)  
-df['mileage'] = df['mileage'].astype(int)  
-df['price'] = df['price'].astype(int)
+    # Convert to integer  
+    df['year'] = df['year'].astype(int)  
+    df['mileage'] = df['mileage'].astype(int)  
+    df['price'] = df['price'].astype(int)
 
-df.reset_index(drop=True, inplace=True)  
-return df  
+    df.reset_index(drop=True, inplace=True)  
+    return df  
+
 
 df = load_data()
 
@@ -68,7 +69,7 @@ if st.button("Predict Price"):
         input_data = pd.DataFrame({
             'make_encoded': [make_map[make_input]],
             'year': [int(year_input)],
-            'mileage': [float(mileage_input)],
+            'mileage': [int(mileage_input)],  # Convert to int as training data
             'fuel_encoded': [fuel_map[fuel_input]]
         })
 
