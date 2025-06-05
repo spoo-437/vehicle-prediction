@@ -1,65 +1,65 @@
-# Install these if not already:
-# pip install streamlit pandas scikit-learn matplotlib seaborn
+# Required: pip install streamlit pandas scikit-learn numpy
 
 import streamlit as st
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import mean_squared_error, r2_score
 
-# Load data — relative path for deployment safety
-df = pd.read_csv("dataset.csv")
+# Load dataset (ensure this file is present in same folder or use Streamlit uploader)
+@st.cache_data
+def load_data():
+    df = pd.read_csv("dataset.csv")
+    df.dropna(subset=['price'], inplace=True)
+    df.fillna(0, inplace=True)
+    return df
 
+df = load_data()
 
-# Encode categorical variables
-label_enc_make = LabelEncoder()
-df['make'] = label_enc_make.fit_transform(df['make'])
+# Label encode manually for make and fuel
+make_list = sorted(df['make'].dropna().unique())
+fuel_list = sorted(df['fuel'].dropna().unique())
 
-label_enc_fuel = LabelEncoder()
-df['fuel'] = label_enc_fuel.fit_transform(df['fuel'])
+make_map = {name: idx for idx, name in enumerate(make_list)}
+fuel_map = {name: idx for idx, name in enumerate(fuel_list)}
+reverse_make_map = {v: k for k, v in make_map.items()}
+reverse_fuel_map = {v: k for k, v in fuel_map.items()}
 
-# Drop rows with missing target
-df.dropna(subset=['price'], inplace=True)
+# Encode for modeling
+df['make_encoded'] = df['make'].map(make_map)
+df['fuel_encoded'] = df['fuel'].map(fuel_map)
 
-# Fill remaining missing values
-df.fillna(0, inplace=True)
-
-# Features & target
-X = df[['make', 'year', 'mileage', 'fuel']]
+X = df[['make_encoded', 'year', 'mileage', 'fuel_encoded']]
 y = df['price']
 
-# Train-test split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Model
 model = LinearRegression()
 model.fit(X_train, y_train)
 
-# Streamlit app
+# 🎯 Streamlit UI
 st.title("🚗 Vehicle Price Predictor")
+st.write("Enter vehicle details to predict its estimated market price.")
 
-# User inputs
-make_input = st.selectbox("Select Make:", df['make'].unique())
-year_input = st.slider("Select Year of Manufacture:", int(df['year'].min()), int(df['year'].max()), 2015)
-mileage_input = st.number_input("Enter Mileage (in km):", min_value=0, value=50000)
-fuel_input = st.selectbox("Select Fuel Type:", df['fuel'].unique())
+make_input = st.selectbox("Select Car Brand/Make", make_list)
+fuel_input = st.selectbox("Select Fuel Type", fuel_list)
+year_input = st.slider("Manufacturing Year", int(df['year'].min()), int(df['year'].max()), 2015)
+mileage_input = st.number_input("Mileage (in km)", min_value=0, value=50000)
 
-# Prediction
 if st.button("Predict Price"):
-    input_data = pd.DataFrame({
-        'make': [make_input],
+    input_df = pd.DataFrame({
+        'make_encoded': [make_map[make_input]],
         'year': [year_input],
         'mileage': [mileage_input],
-        'fuel': [fuel_input]
+        'fuel_encoded': [fuel_map[fuel_input]]
     })
 
-    prediction = model.predict(input_data)
-    st.success(f"Estimated Price: ₹ {prediction[0]:,.2f}")
+    predicted_price = model.predict(input_df)[0]
+    st.success(f"💰 Estimated Vehicle Price: ₹ {predicted_price:,.2f}")
 
-# Model performance metrics
+# 📊 Show model performance
 if st.checkbox("Show Model Performance"):
     y_pred = model.predict(X_test)
-    st.write("Mean Squared Error:", mean_squared_error(y_test, y_pred))
-    st.write("R² Score:", r2_score(y_test, y_pred))
+    st.write(f"📉 Mean Squared Error: {mean_squared_error(y_test, y_pred):,.2f}")
+    st.write(f"📈 R² Score: {r2_score(y_test, y_pred):.4f}")
