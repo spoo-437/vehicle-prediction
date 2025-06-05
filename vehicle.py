@@ -5,25 +5,29 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 
-# Clean column names
-df.columns = df.columns.str.strip().str.lower()
 
-# Drop unnecessary or incomplete rows
-df.dropna(subset=["make", "year", "mileage", "fuel", "price"], inplace=True)
+@st.cache_data
+def load_data():
+df = pd.read_csv("dataset.csv")
 
-# Standardize text
-df["make"] = df["make"].str.strip().str.title()
-df["fuel"] = df["fuel"].str.strip().str.capitalize()
+# Drop rows with missing required values  
+df.dropna(subset=['make', 'fuel', 'year', 'mileage', 'price'], inplace=True)
 
-# Convert year, mileage, and price to numeric
-df["year"] = pd.to_numeric(df["year"], errors="coerce")
-df["mileage"] = pd.to_numeric(df["mileage"], errors="coerce")
-df["price"] = pd.to_numeric(df["price"], errors="coerce")
+# Clean and convert year, mileage, price columns  
+df['year'] = pd.to_numeric(df['year'], errors='coerce')  
+df['mileage'] = pd.to_numeric(df['mileage'], errors='coerce')  
+df['price'] = pd.to_numeric(df['price'], errors='coerce')  
 
-# Drop rows with any remaining missing values
-df.dropna(inplace=True)
+# Drop rows with invalid numeric data  
+df.dropna(subset=['year', 'mileage', 'price'], inplace=True)  
 
-return df
+# Convert to integer  
+df['year'] = df['year'].astype(int)  
+df['mileage'] = df['mileage'].astype(int)  
+df['price'] = df['price'].astype(int)
+
+df.reset_index(drop=True, inplace=True)  
+return df  
 
 df = load_data()
 
